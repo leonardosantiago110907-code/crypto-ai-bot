@@ -2,7 +2,7 @@ import requests
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
-TOKEN = "8677583656:AAHKRBtog2egYTbJxzP9mt9tHcH-VqUrPaI"
+TOKEN = "8677583656:AAGZWoGtxm_h0UPD8Yav15BLpF-A5E2SkDs"
 
 # -------- BTC PRICE --------
 def get_btc():
@@ -190,4 +190,5 @@ def main():
     app.run_polling()
 
 if __name__ == "__main__":
+
     main()
