@@ -1,8 +1,10 @@
+import os
 import requests
+import xml.etree.ElementTree as ET
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
-TOKEN = "8677583656:AAGZWoGtxm_h0UPD8Yav15BLpF-A5E2SkDs"
+TOKEN = os.getenv("TOKEN")
 
 # -------- BTC PRICE --------
 def get_btc():
@@ -14,11 +16,11 @@ def get_btc():
         return f"📊 Bitcoin (BTC)\n\n💰 Precio: ${price:,.2f}"
 
     except:
-        return "⚠️ No pude obtener el precio."
+        return "⚠️ Error obteniendo precio BTC"
+
 
 # -------- PRICE ANY CRYPTO --------
 def get_price(symbol):
-
     try:
         url = f"https://api.binance.com/api/v3/ticker/price?symbol={symbol.upper()}USDT"
         r = requests.get(url).json()
@@ -28,11 +30,11 @@ def get_price(symbol):
         return f"💰 {symbol.upper()}\n\nPrecio: ${price:,.4f}"
 
     except:
-        return "⚠️ Crypto no encontrada."
+        return "⚠️ Crypto no encontrada"
+
 
 # -------- FEAR & GREED --------
 def get_fg():
-
     try:
         url = "https://api.alternative.me/fng/"
         r = requests.get(url).json()
@@ -48,34 +50,10 @@ Estado: {status}
 """
 
     except:
-        return "⚠️ No pude obtener Fear & Greed."
+        return "⚠️ Error obteniendo Fear & Greed"
 
-# -------- NEWS --------
-def get_news():
-    try:
-        url = "https://news.google.com/rss/search?q=crypto+bitcoin&hl=en-US&gl=US&ceid=US:en"
 
-        r = requests.get(url)
-
-        import xml.etree.ElementTree as ET
-
-        root = ET.fromstring(r.content)
-
-        news = "📰 Noticias Crypto\n\n"
-
-        items = root.findall(".//item")[:3]
-
-        for item in items:
-            title = item.find("title").text
-            link = item.find("link").text
-
-            news += f"• {title}\n{link}\n\n"
-
-        return news
-
-    except:
-        return "⚠️ No pude obtener noticias."
-# -------- TOP 10 CRYPTO --------
+# -------- TOP CRYPTOS --------
 def get_top():
 
     try:
@@ -109,7 +87,9 @@ def get_top():
         return text
 
     except:
-        return "⚠️ No pude obtener el top."
+        return "⚠️ Error obteniendo top"
+
+
 # -------- MAYER MULTIPLE --------
 def get_mayer():
 
@@ -145,32 +125,68 @@ Estado: {status}
 """
 
     except:
-        return "⚠️ No pude calcular el Mayer Multiple."
+        return "⚠️ Error calculando Mayer Multiple"
+
+
+# -------- NEWS --------
+def get_news():
+
+    try:
+
+        url = "https://news.google.com/rss/search?q=crypto+bitcoin&hl=en-US&gl=US&ceid=US:en"
+
+        r = requests.get(url)
+
+        root = ET.fromstring(r.content)
+
+        news = "📰 Noticias Crypto\n\n"
+
+        items = root.findall(".//item")[:3]
+
+        for item in items:
+
+            title = item.find("title").text
+            link = item.find("link").text
+
+            news += f"• {title}\n{link}\n\n"
+
+        return news
+
+    except:
+        return "⚠️ Error obteniendo noticias"
+
+
 # -------- COMMANDS --------
 
 async def btc(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(get_btc())
 
+
 async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if len(context.args) == 0:
         await update.message.reply_text("Uso: /price btc")
-        return
 
-    symbol = context.args[0]
-    await update.message.reply_text(get_price(symbol))
+    else:
+        symbol = context.args[0]
+        await update.message.reply_text(get_price(symbol))
+
 
 async def fg(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(get_fg())
 
-async def news(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(get_news())
 
 async def top(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(get_top())
 
+
 async def mayer(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(get_mayer())
+
+
+async def news(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(get_news())
+
 
 # -------- MAIN --------
 
@@ -181,14 +197,14 @@ def main():
     app.add_handler(CommandHandler("btc", btc))
     app.add_handler(CommandHandler("price", price))
     app.add_handler(CommandHandler("fg", fg))
-    app.add_handler(CommandHandler("news", news))
     app.add_handler(CommandHandler("top", top))
     app.add_handler(CommandHandler("mayer", mayer))
+    app.add_handler(CommandHandler("news", news))
 
     print("Bot funcionando...")
 
     app.run_polling()
 
-if __name__ == "__main__":
 
+if __name__ == "__main__":
     main()
